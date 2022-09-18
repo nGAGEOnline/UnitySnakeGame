@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using SnakeLib.Enums;
 using SnakeLib.Interfaces;
 using SnakeLib.Structs;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
@@ -25,12 +23,12 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 
 	[Header("Other")]
 	[SerializeField] private Color _backgroundColor;
+	// [SerializeField] private Color _snakeColor;
+	// [SerializeField] private Color _gridColor;
+	// [SerializeField] private Color _borderColor;
 
-	private Transform _gridTransform;
-	private Transform _emptyTransform;
-	private Transform _borderTransform;
-	
 	private readonly Dictionary<Coord, Transform> _grid = new();
+	private readonly Dictionary<string, Transform> _transforms = new();
 
 	private void Awake()
 	{
@@ -40,21 +38,12 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 		var size = height * screenRatio;
 		_camera.orthographicSize = size + 1;
 		_camera.backgroundColor = _backgroundColor;
-		
-		foreach (Transform child in transform)
+
+		foreach (var title in new[] { "Grid", "Border", "Empty" })
 		{
-			switch (child.name)
-			{
-				case "Grid":
-					_gridTransform = child;
-					break;
-				case "Border":
-					_borderTransform = child;
-					break;
-				case "Empty":
-					_emptyTransform = child;
-					break;
-			}
+			var child = new GameObject(title);
+			child.transform.parent = transform;
+			_transforms.Add(title, child.transform);
 		}
 	}
 
@@ -62,65 +51,56 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 	{
 		for (var y = -1; y <= _snakeGame.Settings.Height; y++)
 			for (var x = -1; x <= _snakeGame.Settings.Width; x++)
-				if (x < 0 || x >= _snakeGame.Settings.Width || y < 0 || y >= _snakeGame.Settings.Height)
-					Print(new Coord(x, y), _border, _borderTransform);
+				if (x < 0 || x == _snakeGame.Settings.Width || y < 0 || y == _snakeGame.Settings.Height)
+					Render(new Coord(x, y), _border, _transforms["Border"]);
 	}
 
 	public void RenderGrid()
 	{
 		for (var y = 0; y < _snakeGame.Settings.Height; y++)
 			for (var x = 0; x < _snakeGame.Settings.Width; x++)
-				Print(new Coord(x, y), _empty, _gridTransform);
+				Render(new Coord(x, y), _empty, _transforms["Grid"]);
 	}
 
 	public void RenderSnake(IEnumerable<Coord> coords)
 	{
 		var array = coords as Coord[] ?? coords.ToArray();
 		for (var i = 0; i < 2; i++)
-			Print(array[i], i == 0 ? _snakeHead : _snake, GridValue.Snake);
+			Render(array[i], i == 0 ? _snakeHead : _snake, CellType.Snake);
 	}
 
-	public void Render(Coord coord, GridValue gridValue) 
-		=> Print(coord, GetRenderDetails(gridValue), gridValue);
+	public void Render(Coord coord, CellType cellType) 
+		=> Render(coord, GetTransformFromType(cellType), cellType);
 
-	public void Clear(Coord coord)
+	private Transform GetTransformFromType(CellType cellType)
 	{
-		if (!_grid.ContainsKey(coord))
-			return;
-		
-		var instance = _grid[coord];
-		_grid.Remove(coord);
-		Destroy(instance.gameObject);
+		return cellType switch
+		{
+			CellType.Border => _border,
+			CellType.Empty => _blank,
+			CellType.Snake => _snake,
+			CellType.Fruit => _fruit,
+			_ => _empty
+		};
 	}
 
-	private void Print(Coord coord, Transform prefab, Transform parent)
+	private void Render(Coord coord, Transform prefab, Transform parent) 
+		=> GetInstance(coord, prefab, parent);
+
+	private void Render(Coord coord, Transform prefab, CellType cellType)
 	{
-		var position = new Vector3(-_snakeGame.Settings.Width / 2 + coord.X, _snakeGame.Settings.Height / 2 - coord.Y);
-		var instance = Instantiate(prefab, position, Quaternion.identity, parent);
-		instance.name = $"[{coord.X}-{coord.Y}] {parent.name}";
-	}
-	private void Print(Coord coord, Transform prefab, GridValue gridValue)
-	{
-		var position = new Vector3(-_snakeGame.Settings.Width / 2 + coord.X, _snakeGame.Settings.Height / 2 - coord.Y);
-		var instance = Instantiate(prefab, position, Quaternion.identity, GetTargetTransform(gridValue));
-		instance.name = $"[{coord.X}-{coord.Y}] {gridValue}";
-		
+		var instance = GetInstance(coord, prefab, GetTargetTransform(cellType));
 		AddToGrid(coord, instance);
 	}
 
-	private Transform GetTargetTransform(GridValue gridValue)
+	private Transform GetInstance(Coord coord, Transform prefab, Transform parent)
 	{
-		var localTransform = transform;
-		return gridValue switch
-		{
-			GridValue.Empty => _emptyTransform,
-			GridValue.Snake => localTransform,
-			GridValue.Fruit => localTransform,
-			GridValue.Bomb => localTransform,
-			GridValue.Border => _borderTransform,
-			_ => _gridTransform
-		};
+		var instance = Instantiate(prefab, GetPosition(coord), Quaternion.identity, parent);
+		instance.name = $"[{coord.X}-{coord.Y}] {parent.name}";
+		return instance;
 	}
+	private Vector3 GetPosition(Coord coord) 
+		=> new (-_snakeGame.Settings.Width / 2 + coord.X, _snakeGame.Settings.Height / 2 - coord.Y);
 
 	private void AddToGrid(Coord coord, Transform instance)
 	{
@@ -133,17 +113,18 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 			_grid[coord] = instance;
 		}
 	}
-	
-	private Transform GetRenderDetails(GridValue gridValue)
+
+	private Transform GetTargetTransform(CellType cellType)
 	{
-		return gridValue switch
+		var localTransform = transform;
+		return cellType switch
 		{
-			GridValue.Border => _border,
-			GridValue.Empty => _blank,
-			GridValue.Snake => _snake,
-			GridValue.Fruit => _fruit,
-			_ => _empty
+			CellType.Empty => _transforms["Empty"],
+			CellType.Snake => localTransform,
+			CellType.Fruit => localTransform,
+			CellType.Bomb => localTransform,
+			CellType.Border => _transforms["Border"],
+			_ => _transforms["Grid"]
 		};
 	}
-
 }

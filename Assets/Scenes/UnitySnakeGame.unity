@@ -504,7 +504,10 @@ MonoBehaviour:
   _empty: {fileID: 8036315319396626465, guid: d1ce01cf7f4a1c44191582f112e5ba05, type: 3}
   _blank: {fileID: 8036315319396626465, guid: 72f25c2d652da844db95657de3c48b65, type: 3}
   _border: {fileID: 8036315319396626465, guid: 81ead417fef35e74fa1a175fd991b522, type: 3}
-  _backgroundColor: {r: 0.16834283, g: 0.3679245, b: 0.17499554, a: 0}
+  _backgroundColor: {r: 0.09433961, g: 0.08647797, b: 0.08254716, a: 0}
+  _snakeColor: {r: 0, g: 0, b: 0, a: 0}
+  _gridColor: {r: 0, g: 0, b: 0, a: 0}
+  _borderColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &882963916
 GameObject:
   m_ObjectHideFlags: 0

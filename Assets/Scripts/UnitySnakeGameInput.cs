@@ -23,7 +23,7 @@ public class UnitySnakeGameInput : MonoBehaviour, ISnakeGameInput
 	private void Update()
 	{
 		var direction = GetDirectionFromInput();
-		ChangeDirection(direction);
+		TryChangeDirection(direction);
 	}
 	public void Reset() 
 		=> Direction = Direction.Right;
@@ -42,7 +42,7 @@ public class UnitySnakeGameInput : MonoBehaviour, ISnakeGameInput
 		return Direction;
 	}
 
-	private void ChangeDirection(Direction direction)
+	private void TryChangeDirection(Direction direction)
 	{
 		if (CanChangeDirection(direction))
 			_directionChanges.Enqueue(direction);
