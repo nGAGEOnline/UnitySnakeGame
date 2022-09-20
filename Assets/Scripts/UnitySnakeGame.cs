@@ -26,7 +26,11 @@ public class UnitySnakeGame : MonoBehaviour, ISnakeGame
 		Input = GetComponent<ISnakeGameInput>();
 		Renderer = GetComponent<ISnakeGameRenderer>();
 		Game = new SnakeGame(_settings, Renderer, Input);
+		Game.OnScoreChanged += ScoreChanged;
 	}
+
+	private void ScoreChanged(int score) 
+		=> OnScoreChanged?.Invoke(score);
 
 	private void Start() 
 		=> SetupGame();

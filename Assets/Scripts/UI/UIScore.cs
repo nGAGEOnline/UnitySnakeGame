@@ -6,18 +6,18 @@ namespace UI
 {
 	public class UIScore : MonoBehaviour
 	{
-		private UnitySnakeGame _snakeGame;
-		private TMP_Text _tmpText;
+		[SerializeField] private UnitySnakeGame _snakeGame;
+		[SerializeField] private TMP_Text _tmpText;
     
-		private void OnEnable()
+		private void Start()
 		{
-			_tmpText = GetComponent<TMP_Text>();
-			_snakeGame = FindObjectOfType<UnitySnakeGame>() ?? throw new NullReferenceException();
-			_snakeGame.OnScoreChanged += UpdateScore;
+			if (_snakeGame != null)
+				_snakeGame.OnScoreChanged += UpdateScore;
 		}
 		private void OnDisable()
 		{
-			_snakeGame.OnScoreChanged -= UpdateScore;
+			if (_snakeGame != null)
+				_snakeGame.OnScoreChanged -= UpdateScore;
 		}
 
 		private void UpdateScore(int score)

@@ -592,6 +592,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64dca379b06ca5448b2d2ff74a3ee993, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _snakeGame: {fileID: 857719374}
+  _tmpText: {fileID: 1121151489}
 --- !u!114 &1121151489
 MonoBehaviour:
   m_ObjectHideFlags: 0
