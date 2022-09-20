@@ -50,7 +50,7 @@ public class UnitySnakeGameInput : MonoBehaviour, ISnakeGameInput
 
 	private bool CanChangeDirection(Direction newDirection)
 	{
-		if (_directionChanges.Count == _bufferSize || newDirection == Direction)
+		if (_directionChanges.Count == _bufferSize || newDirection == Direction || _directionChanges.Contains(newDirection))
 			return false;
 
 		var lastDirection = GetLastDirection();
