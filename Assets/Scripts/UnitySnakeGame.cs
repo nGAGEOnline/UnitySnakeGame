@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SnakeLib;
+using SnakeLib.Enums;
 using SnakeLib.Interfaces;
+using SnakeLib.Interfaces.UI;
 using UnityEngine;
 
 public class UnitySnakeGame : MonoBehaviour, ISnakeGame
@@ -13,7 +16,9 @@ public class UnitySnakeGame : MonoBehaviour, ISnakeGame
 	public SnakeGame Game { get; private set; }
 	public ISnakeGameInput Input { get; private set; }
 	public ISnakeGameRenderer Renderer { get; private set; }
-	
+
+	public Dictionary<DisplayElementType, IDisplayElement> DisplayElements { get; } = new();
+
 	public event Action<int> OnScoreChanged;
 
 	[SerializeField] private SnakeSettings _settings;
