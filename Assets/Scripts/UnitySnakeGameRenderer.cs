@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SnakeLib.Enums;
 using SnakeLib.Interfaces;
+using SnakeLib.Interfaces.UI;
 using SnakeLib.Structs;
 using UnityEngine;
 
@@ -70,11 +71,6 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 
 	public void Render(Coord coord, CellType cellType) 
 		=> Render(coord, GetPrefabFromType(cellType), cellType);
-
-	public void Render(Coord coord, string text, DisplayElementType displayElementType)
-	{
-		throw new NotImplementedException();
-	}
 
 	private void Render(Coord coord, Transform prefab, CellType cellType)
 	{

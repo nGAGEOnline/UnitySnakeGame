@@ -1,4 +1,6 @@
 using System;
+using SnakeLib.Interfaces.UI;
+using SnakeLib.Structs;
 using TMPro;
 using UnityEngine;
 
