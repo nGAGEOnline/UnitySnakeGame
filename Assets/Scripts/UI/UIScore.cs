@@ -6,8 +6,13 @@ using UnityEngine;
 
 namespace UI
 {
-	public class UIScore : MonoBehaviour
+	public class UIScore : MonoBehaviour, ITextField<Color>
 	{
+		public Coord Coord { get; }
+		public string Text { get; }
+		public string FullText { get; }
+		public ITextStyle<Color> TextStyle { get; }
+
 		[SerializeField] private string _prefix = "Score:";
 		
 		private UnitySnakeGame _snakeGame;
@@ -29,9 +34,7 @@ namespace UI
 				_snakeGame.OnScoreChanged -= UpdateScore;
 		}
 
-		private void UpdateScore(int score)
-		{
-			_tmpText.text = $"{_prefix} {score}";
-		}
+		public void UpdateText(string text) => _tmpText.text = $"{_prefix} {text}";
+		private void UpdateScore(int score) => UpdateText($"{score}");
 	}
 }

@@ -7,7 +7,7 @@ using SnakeLib.Interfaces.UI;
 using SnakeLib.Structs;
 using UnityEngine;
 
-public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
+public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer<Color>
 {
 	[Header("Dependency")]
 	[SerializeField] private UnitySnakeGame _snakeGame;
@@ -27,8 +27,8 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 	[SerializeField] private Color _backgroundColor;
 
 	private readonly Dictionary<Coord, Transform> _transforms = new();
-	private readonly Dictionary<CellType, Transform> _children = new();
-	private readonly Dictionary<CellType, Queue<Transform>> _queue = new();
+	private readonly Dictionary<RenderType, Transform> _children = new();
+	private readonly Dictionary<RenderType, Queue<Transform>> _queue = new();
 
 	private void Awake()
 	{
@@ -39,7 +39,7 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 		_camera.orthographicSize = size + 1;
 		_camera.backgroundColor = _backgroundColor;
 
-		foreach (var title in new[] { CellType.Grid, CellType.Border, CellType.Empty })
+		foreach (var title in new[] { RenderType.Grid, RenderType.Border, RenderType.Empty })
 		{
 			var child = new GameObject(title.ToString());
 			child.transform.parent = transform;
@@ -52,34 +52,51 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 		for (var y = -1; y <= _snakeGame.Settings.Height; y++)
 			for (var x = -1; x <= _snakeGame.Settings.Width; x++)
 				if (x < 0 || x == _snakeGame.Settings.Width || y < 0 || y == _snakeGame.Settings.Height)
-					Render(new Coord(x, y), _border, CellType.Border);
+					Render(new Coord(x, y), _border, RenderType.Border);
 	}
 
 	public void RenderGrid()
 	{
 		for (var y = 0; y < _snakeGame.Settings.Height; y++)
 			for (var x = 0; x < _snakeGame.Settings.Width; x++)
-				Render(new Coord(x, y), _grid, CellType.Grid);
+				Render(new Coord(x, y), _grid, RenderType.Grid);
 	}
 
 	public void RenderSnake(IEnumerable<Coord> coords)
 	{
 		var array = coords as Coord[] ?? coords.ToArray();
 		for (var i = 0; i < 2; i++)
-			Render(array[i], i == 0 ? _snakeHead : _snake, CellType.Snake);
+			Render(array[i], i == 0 ? _snakeHead : _snake, RenderType.Snake);
 	}
 
-	public void Render(Coord coord, CellType cellType) 
-		=> Render(coord, GetPrefabFromType(cellType), cellType);
+	public void Render(Coord coord, RenderType renderType) 
+		=> Render(coord, GetPrefabFromType(renderType), renderType);
 
-	private void Render(Coord coord, Transform prefab, CellType cellType)
+	public void Render(ITextField<Color> textFieldElement)
+	{
+		var renderType = textFieldElement.TextStyle.RenderType;
+		var prefab = GetPrefabFromType(renderType);
+		// Render(textFieldElement.Coord, GetPrefabFromType(textFieldElement.TextStyle.RenderType), textFieldElement.TextStyle.RenderType);
+		var parent = GetTargetTransform(renderType);
+		var instance = GetInstance(textFieldElement.Coord, prefab, parent);
+		var renderer = instance.GetComponent<Renderer>();
+		if (renderer)
+			renderer.material.color = textFieldElement.TextStyle.Foreground;
+		
+		if (renderType == RenderType.Grid)
+			return;
+		
+		AddToGrid(textFieldElement.Coord, instance, parent);
+	}
+
+	private void Render(Coord coord, Transform prefab, RenderType renderType)
 	{
 		// if (cellType == CellType.Empty)
 		// 	return;
 		
-		var parent = GetTargetTransform(cellType);
+		var parent = GetTargetTransform(renderType);
 		var instance = GetInstance(coord, prefab, parent);
-		if (cellType == CellType.Grid)
+		if (renderType == RenderType.Grid)
 			return;
 		
 		AddToGrid(coord, instance, parent);
@@ -106,31 +123,31 @@ public class UnitySnakeGameRenderer : MonoBehaviour, ISnakeGameRenderer
 		}
 	}
 
-	private Transform GetPrefabFromType(CellType cellType)
+	private Transform GetPrefabFromType(RenderType renderType)
 	{
-		return cellType switch
+		return renderType switch
 		{
-			CellType.Border => _border,
-			CellType.Empty => _empty,
-			CellType.Grid => _grid,
-			CellType.Snake => _snake,
-			CellType.Fruit => _fruit,
+			RenderType.Border => _border,
+			RenderType.Empty => _empty,
+			RenderType.Grid => _grid,
+			RenderType.Snake => _snake,
+			RenderType.Fruit => _fruit,
 			_ => _empty
 		};
 	}
 
-	private Transform GetTargetTransform(CellType cellType)
+	private Transform GetTargetTransform(RenderType renderType)
 	{
 		var localTransform = transform;
-		return cellType switch
+		return renderType switch
 		{
-			CellType.Empty => _children[CellType.Empty],
-			CellType.Grid => _children[CellType.Grid],
-			CellType.Snake => localTransform,
-			CellType.Fruit => localTransform,
-			CellType.Bomb => localTransform,
-			CellType.Border => _children[CellType.Border],
-			_ => _children[CellType.Empty]
+			RenderType.Empty => _children[RenderType.Empty],
+			RenderType.Grid => _children[RenderType.Grid],
+			RenderType.Snake => localTransform,
+			RenderType.Fruit => localTransform,
+			RenderType.Bomb => localTransform,
+			RenderType.Border => _children[RenderType.Border],
+			_ => _children[RenderType.Empty]
 		};
 	}
 }
