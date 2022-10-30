@@ -9,13 +9,13 @@ using SnakeLib.Interfaces;
 using SnakeLib.Interfaces.UI;
 using UnityEngine;
 
-public class UnitySnakeGame : MonoBehaviour, ISnakeGame<Color>
+public class UnitySnakeGame : MonoBehaviour, ISnakeGame
 {
 	public SnakeSettings Settings => _settings;
 	
-	public SnakeGame<Color> Game { get; private set; }
+	public SnakeGame Game { get; private set; }
 	public ISnakeGameInput Input { get; private set; }
-	public ISnakeGameRenderer<Color> Renderer { get; private set; }
+	public ISnakeGameRenderer Renderer { get; private set; }
 
 	public event Action<int> OnScoreChanged;
 
@@ -27,8 +27,8 @@ public class UnitySnakeGame : MonoBehaviour, ISnakeGame<Color>
 	private void Awake()
 	{
 		Input = GetComponent<ISnakeGameInput>();
-		Renderer = GetComponent<ISnakeGameRenderer<Color>>();
-		Game = new SnakeGame<Color>(_settings, Renderer, Input);
+		Renderer = GetComponent<ISnakeGameRenderer>();
+		Game = new SnakeGame(_settings, Renderer, Input);
 	}
 
 	private void OnEnable() 
@@ -93,5 +93,5 @@ public class UnitySnakeGame : MonoBehaviour, ISnakeGame<Color>
 	}
 
 	public void Reset() 
-		=> Game = new SnakeGame<Color>(_settings, Renderer, Input);
+		=> Game = new SnakeGame(_settings, Renderer, Input);
 }

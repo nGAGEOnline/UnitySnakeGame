@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UI
 {
-	public class UIScore : MonoBehaviour, ITextField<Color>
+	public class UIScore : MonoBehaviour, ITextField
 	{
 		public Coord Coord { get; }
 		public string Text { get; }
