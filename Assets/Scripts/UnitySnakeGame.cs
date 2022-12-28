@@ -1,12 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using SnakeLib;
-using SnakeLib.Enums;
 using SnakeLib.Interfaces;
-using SnakeLib.Interfaces.UI;
 using UnityEngine;
 
 public class UnitySnakeGame : MonoBehaviour, ISnakeGame
